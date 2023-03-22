@@ -64,9 +64,8 @@ void gameOver();
 ```
 Logical graph of the game: 
 
-
+![Untitled Diagram drawio](https://user-images.githubusercontent.com/21341065/227037531-c221f7c4-7cc0-44c1-bf22-8c0243d1d650.png)
 ![IMG_1346](https://user-images.githubusercontent.com/122502073/226824153-9c207e2e-e646-4d70-9015-e96e56d04276.jpg)
-https://github.com/SitingT/flappy-bird/issues/1#issue-1636489485
 
 #### c.  Code Structure and Implementation
   
