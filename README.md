@@ -66,7 +66,7 @@ Logical graph of the game:
 
 
 ![IMG_1346](https://user-images.githubusercontent.com/122502073/226824153-9c207e2e-e646-4d70-9015-e96e56d04276.jpg)
-
+https://github.com/SitingT/flappy-bird/issues/1#issue-1636489485
 
 #### c.  Code Structure and Implementation
   
