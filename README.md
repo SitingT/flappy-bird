@@ -62,12 +62,26 @@ int hitGround();
 int hitPipe(struct Barrier pipeQ[]);
 void gameOver(); 
 ```
-Logical graph of the game: 
+Logical graph of the key parts: 
 
-![Untitled Diagram drawio](https://user-images.githubusercontent.com/21341065/227037531-c221f7c4-7cc0-44c1-bf22-8c0243d1d650.png)
-![Untitled Diagram drawio (1)](https://user-images.githubusercontent.com/21341065/227044538-c5641760-a2ad-4986-b7fa-e0bf0f74ec2a.png)
+1. Game process
 
-#### c.  Code Structure and Implementation
+![32bf89f26c5b184e9ee0d8fe9380f40](https://user-images.githubusercontent.com/117063757/227073610-6af1cb25-9e97-4746-b613-a3d846a7318b.png)
+
+
+2. Collision
+<img width="529" alt="814df56b99e0e95b3d1189a3615ca98" src="https://user-images.githubusercontent.com/117063757/227073101-218da383-26e6-41cb-9471-2cb6ac4536ec.png">
+![collision](https://user-images.githubusercontent.com/117063757/227074513-efb9f91c-a6d0-48a5-89e9-503c7a769f7a.png)
+
+
+3. Pipe display
+<img width="443" alt="3c44e3b210d6359a783bd3981672b31" src="https://user-images.githubusercontent.com/117063757/227073237-31fdce3a-6c94-4b70-9537-f30c24cc815f.png">
+<img width="373" alt="92e26151f621cd51268d12afa1243e5" src="https://user-images.githubusercontent.com/117063757/227073338-ad8c012c-ad0f-40a8-a1df-e77afa05190f.png">
+
+
+
+
+#### c.  Raw Code Implementation
   
   1. load all needed images 
 ```c
@@ -243,3 +257,16 @@ int main() {
 	return 0;
 }
 ```
+
+## 4. Milestone
+So far, we have achieved:
+1. Game process of the game
+2. Key parts of the game function including collision, displaying pipes
+3. Raw demostration of the game
+<img width="219" alt="image" src="https://user-images.githubusercontent.com/117063757/227074220-a646235e-b4a7-445a-883f-842ee8de7b6d.png">
+
+
+Future plan:
+1. Design the points adding logic
+2. Refine the game image
+3. Improve the game interface
