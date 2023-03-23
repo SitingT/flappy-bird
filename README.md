@@ -71,7 +71,9 @@ Logical graph of the key parts:
 
 2. Collision
 <img width="529" alt="814df56b99e0e95b3d1189a3615ca98" src="https://user-images.githubusercontent.com/117063757/227073101-218da383-26e6-41cb-9471-2cb6ac4536ec.png">
-![collision](https://user-images.githubusercontent.com/117063757/227074513-efb9f91c-a6d0-48a5-89e9-503c7a769f7a.png)
+
+![image](https://user-images.githubusercontent.com/122502073/227075167-1b54cc34-a927-44db-a91d-060ed81e150f.png)
+
 
 
 3. Pipe display
