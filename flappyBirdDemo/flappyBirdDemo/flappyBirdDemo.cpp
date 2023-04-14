@@ -188,7 +188,7 @@ int hitPillar()
 {
 	int pos = xHit();  //获取i值
 	printf("%d\n", pos);
-	if ((pos != -1 && (flappyBird.y + 20) < pillar[pos].height)  //上面柱子
+	if ((pos != -1 && (flappyBird.y + 15) < pillar[pos].height)  //上面柱子
 		|| (pos != -1 && (flappyBird.y + 28) > (192 + pillar[pos].height)))  //下面柱子
 	{
 		return 1;
@@ -269,7 +269,12 @@ int main() {
 					initPillar(i);
 				}
 			}
-
+			//撞地或者撞柱子，gg
+			if (hitGround() || hitPillar())
+			{
+				Sleep(800);
+				break;
+			}
 			//循环移动柱子
 
 			for (int i = 0; i < 3; i++)
@@ -282,7 +287,6 @@ int main() {
 
 			flappyBird.y += 10;
 
-
 			//按键
 			if (_kbhit())//判断有无按键，没按键持续下落
 			{
@@ -291,12 +295,7 @@ int main() {
 
 			putPoints(getPoints());
 
-			//撞地或者撞柱子，gg
-			if (hitGround() || hitPillar())
-			{
-				Sleep(800);
-				break;
-			}
+			
 			Sleep(200);
 			FlushBatchDraw();
 
