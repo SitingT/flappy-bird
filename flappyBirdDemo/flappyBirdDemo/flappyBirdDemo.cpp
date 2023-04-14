@@ -2,14 +2,16 @@
 #include<stdlib.h>
 #include<conio.h>
 #include<time.h>
-#include<graphics.h>
 
-IMAGE background;
-IMAGE land;
+//下载EasyX配置头文件
+#include<easyx.h>
+
+IMAGE bk;
 IMAGE bird[2];
-IMAGE down;
-IMAGE up;
-IMAGE end[2];
+IMAGE down[2];
+IMAGE up[2];
+//Game over 的图
+IMAGE over[2];
 
 struct Barrier
 {
@@ -19,65 +21,80 @@ struct Barrier
 	//障碍高度
 	int height;
 
-}pillar;
-
+};
+struct Barrier pillar[3];
 
 struct Bird
 {
 	int x;
 	int y;
 	int speed;
-}flappyBird = {124, 304,50};
+}flappyBird = { 120, 280, 30 };
 
 
 void loadImages() {
 	//加载背景
-	loadimage(&background, L"bg_day.jpg"); //L用来解决函数重载
-	loadimage(&land, L"land.jpg");
+	loadimage(&bk, L"background.bmp"); //L用来解决函数重载
+
 	//加载bird
-	loadimage(bird,L"bird2_0.jpg", 48, 48);
-	loadimage(bird + 1, L"bird2_0_.jpg", 48, 48);
+	loadimage(bird + 0, L"birdy.bmp");
+	loadimage(bird + 1, L"bird.bmp");
 
 	//加载柱子
-	loadimage(&down, L"pipe_down.jpg");
-	loadimage(&up, L"pipe_up.jpg");
+	loadimage(down + 0, L"downy.bmp");
+	loadimage(down + 1, L"down.bmp");
+	loadimage(up + 0, L"upy.bmp");
+	loadimage(up + 1, L"up.bmp");
 
+	//gameover
+	loadimage(over + 0, L"endy.bmp");
+	loadimage(over + 1, L"end.bmp");
 }
+
 
 //把鸟放上去
-void putBird(int x, int y) {
+void putBird() {
 	//处理掩码图
-	putimage(x, y, bird + 1, SRCAND);
-	putimage(x, y, bird, SRCPAINT);
+	putimage(flappyBird.x, flappyBird.y, bird + 0, SRCAND);
+	putimage(flappyBird.x, flappyBird.y, bird + 1, SRCPAINT);
 }
 
-//放置柱子
-void putBarrier(struct Barrier pipe) {
-	//上方的柱子
-	putimage(pipe.x, 0, 52, pipe.height, &down, 0, 320 - pipe.height, SRCAND);
-	putimage(pipe.x, 0, 52, pipe.height, &down, 0, 320-pipe.height, SRCPAINT);
-
-	//下方的柱子
-	putimage(pipe.x, 192 + pipe.height, 52, 320 - pipe.height, &up, 0, 0, SRCAND);
-	putimage(pipe.x, 192 + pipe.height, 52, 320 - pipe.height, &up, 0, 0, SRCPAINT);
+//初始化柱子
+void initPillar(int i)  //i：第几根柱子
+{
+	pillar[i].x = 288;  //在窗口外面产生
+	pillar[i].y = 0;
+	pillar[i].height = rand() % 100 + 150; //+160是为了防止柱子随机到0.[0,99]+150-->[150,99+150]
 }
 
-
-void initBarrier(struct Barrier pipeQ[], int i) {
-	//柱子的高度形成随机数
-	//任何数字取100的余数，然后加上160
-	pipeQ[i].height = rand() % 100 + 160;
-
-	//循环队列处理柱子的出现
-	while (pipeQ[i].height == pipeQ[(i+1)%3].height 
-		|| pipeQ[i].height == pipeQ[(i+2)%3].height)
-	{
-		pipeQ[i].height = rand() % 100 + 160;
-	}
-	//柱子起始位置
-	pipeQ[i].x = 288;
-	pipeQ[i].y = 0;
+//画柱子
+void putPillar(int i)
+{
+	//上面柱子
+	putimage(pillar[i].x, 0, 52, pillar[i].height, down + 0,
+		0, 320 - pillar[i].height, SRCAND);
+	putimage(pillar[i].x, 0, 52, pillar[i].height, down + 1,
+		0, 320 - pillar[i].height, SRCPAINT);
+	//下面柱子
+	putimage(pillar[i].x, 512 - (320 - pillar[i].height),
+		52, 320 - pillar[i].height, up + 0, 0, 0, SRCAND);
+	putimage(pillar[i].x, 512 - (320 - pillar[i].height),
+		52, 320 - pillar[i].height, up + 1, 0, 0, SRCPAINT);
 }
+
+//分装定时器--闹钟
+//int Timer(int count, int id)  //count：时间间隔，id：几号定时器
+//{
+//	static int starTime[10];
+//	int endTime = clock();   //获取程序运行到当前位置的时间
+//	if (endTime - starTime[id] > count) //触发定时器
+//	{
+//		starTime[id] = endTime;
+//		return 1;// 启动id号定时器
+//	}
+//	return 0;
+//}
+
 
 
 //按键反馈
@@ -85,9 +102,8 @@ void keyBoard() {
 	char userKey = _getch();//获取按键输入不显示
 	switch (userKey)
 	{
-		//上键
 		//鸟起来的速度要大于下降的速度
-	case 72:
+	case ' ':
 		flappyBird.y -= flappyBird.speed;
 
 	default:
@@ -98,7 +114,7 @@ void keyBoard() {
 
 //撞到地上，gg
 int hitGround() {
-	if (flappyBird.y > 512 || flappyBird.y <=0) {
+	if (flappyBird.y + 35 > 512 || flappyBird.y + 10 <= 0) {
 		return 1;
 	}
 	else
@@ -108,48 +124,73 @@ int hitGround() {
 }
 
 
-//撞到柱子上，gg
-int hitPipe(struct Barrier pipeQ[]) {
-	for (int i = 0; i < 3; i++) {
-		if (pipeQ[i].x >= flappyBird.x && pipeQ[i].x <= (flappyBird.x + 48))
+//碰撞x坐标检测
+int xHit()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		if (flappyBird.x + 36 < pillar[i].x + 52 && flappyBird.x + 36 > pillar[i].x) //[px,px+52]
 		{
-			if (flappyBird.y <= pipeQ[i].y )
-			{
-				return 1;
-			}
-
+			return i;  //i：返回的是第几根柱子 
 		}
-	}return 0;
+	}
+	return -1;
 }
+
+
+//碰撞y方向检测
+int hitPillar()
+{
+	int pos = xHit();  //获取i值
+	printf("%d\n", pos);
+	if ((pos != -1 && (flappyBird.y + 10) < pillar[pos].height)  //上面柱子
+		|| (pos != -1 && (flappyBird.y + 35) > (192 + pillar[pos].height)))  //下面柱子
+	{
+		return 1;
+	}
+	return 0;
+}
+
+
+//积分 todo
 
 
 //Game over
 void gameOver() {
-	printf("Game Over");
-	//int x = 50, y = 608;
-	//while (y >= 240) {
-	//	//设置Gameover 的图
-	//	y -= 50;
-	//}
+	//从下往上
+	int x = 50;
+	int y = 608;
+	while (y >= 240)
+	{
+		putimage(0, 0, &bk);
+		putimage(x, y, over + 0, SRCAND);
+		putimage(x, y, over + 1, SRCPAINT);
+		//使用定时器控制一下，间隔100毫秒移动然后弹出来，2号定时器
+
+		y -= 10;
+		Sleep(100);
+
+		//清除一下上一帧
+		FlushBatchDraw();
+	}
 	Sleep(2000);
-	exit(0);
 }
 
 
 int main() {
 
-	loadImages();
-	//生成窗口大小
-	initgraph(288, 608);
 	//随机数
 	srand((unsigned int)time(NULL));
+	loadImages();
+	//生成窗口大小
+	initgraph(288, 608, 1);
+
 
 	//初始化柱子循环队列
-	struct Barrier pipeQ[3];
 	for (int i = 0; i < 3; i++) {
-		initBarrier(pipeQ, i);
-		//修改柱子之间的距离，形成不等间距障碍出现
-		pipeQ[i].x = 288 + i * 150;
+		initPillar(i);
+		//修改柱子之间的距离，间隔150
+		pillar[i].x = 288 + i * 150;
 	}
 
 	//缓解闪屏
@@ -158,27 +199,31 @@ int main() {
 	//循环使鸟下坠
 	while (1)
 	{
-		putimage(0, 0, &background);
-		putimage(0, 512, &land);
-		putBird(flappyBird.x, flappyBird.y);
-		//更改y轴值来提高难度，也就是下坠快
-		//循环一次下降10个像素点
-		flappyBird.y += 10;
+		putimage(0, 0, &bk);
+		putBird();
 
-		//柱子消失处理
+		//柱子显示
 		for (int i = 0; i < 3; i++)
 		{
-			pipeQ[i].x -= 7;
-			if (pipeQ[i].x < -202) {
-				initBarrier(pipeQ, i);
+			putPillar(i);
+			if (pillar[i].x < -202)
+			{
+				initPillar(i);
 			}
 		}
 
-		//循环显示柱子
-		for (int i = 0; i <3; i++)
+		//循环移动柱子
+
+		for (int i = 0; i < 3; i++)
 		{
-			putBarrier(pipeQ[i]);
+			pillar[i].x -= 10;
 		}
+
+		//更改y轴值来提高难度，也就是下坠快
+		//循环一次下降10个像素点
+
+		flappyBird.y += 10;
+
 
 		//按键
 		if (_kbhit())//判断有无按键，没按键持续下落
@@ -186,16 +231,17 @@ int main() {
 			keyBoard();
 		}
 		//撞地或者撞柱子，gg
-		if (hitGround() || hitPipe(pipeQ))
+		if (hitGround() || hitPillar())
 		{
-			gameOver();
+			break;
 		}
+		Sleep(200);
+		FlushBatchDraw();
 
-		EndBatchDraw();
-		Sleep(100);
 	}
-	
+	gameOver();
 
+	EndBatchDraw();
 	//getchar();
 	closegraph();
 	return 0;
