@@ -1,68 +1,85 @@
+//This is a C language based Flappy Bird game
+//The code is written by Zongling Guo, Chang Yu, Siting Tang
+//Siting Tang and Chang Yu's parts have been noted in the comment
+//Other parts are written by Zongling Guo
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<conio.h>
 #include<time.h>
 
-//下载EasyX配置头文件
+//EasyX library to handle image
+//https://docs.easyx.cn/en-us/intro
 #include<easyx.h>
 
+//Background image
 IMAGE bk;
+
+//Bird images
 IMAGE bird[2];
+
+//Down pipe images
 IMAGE down[2];
+
+//Up pipe images
 IMAGE up[2];
-//Game over 的图
+
+//Game over images
 IMAGE over[2];
-//积分图
+
+//Numbers images
 IMAGE point[20];
-//开始
+
+//Start images
 IMAGE startGame[3];
 
 int points = 0;
 
 struct Barrier
 {
-	//障碍坐标
+	//The pillars coodinate
 	int x;
 	int y;
-	//障碍高度
+	//The height in the window
 	int height;
 
 };
 struct Barrier pillar[3];
+
 
 struct Bird
 {
 	int x;
 	int y;
 	int speed;
-}flappyBird = { 120, 280, 40 };
+}flappyBird = { 120, 280, 40 };//Intiate the bird coordinate and speed
 
 
+// This part is written by Chang Yu
 void loadImages() {
-	//加载背景
-	loadimage(&bk, L"background.bmp"); //L用来解决函数重载
+	//Load images
+	loadimage(&bk, L"background.bmp"); //"L" to solve the overloading error
 
-	//加载开始
+	//Start
 	loadimage(startGame + 0, L"title.png");
 	loadimage(startGame + 1, L"text_ready.png");
 	loadimage(startGame + 2, L"startButton.png");
 	
-
-	//加载bird
+	//Bird
 	loadimage(bird + 0, L"birdy.bmp");
 	loadimage(bird + 1, L"bird.bmp");
 
-	//加载柱子
+	//Pillars
 	loadimage(down + 0, L"downy.bmp");
 	loadimage(down + 1, L"down.bmp");
 	loadimage(up + 0, L"upy.bmp");
 	loadimage(up + 1, L"up.bmp");
 
-	//gameover
+	//Gameover
 	loadimage(over + 0, L"endy.bmp");
 	loadimage(over + 1, L"end.bmp");
 
-	//加载积分图
+	//Numbers
 	loadimage(point + 0, L"0_1.jpg");
 	loadimage(point + 1, L"0_2.jpg");
 	loadimage(point + 2, L"1_1.jpg");
@@ -85,10 +102,10 @@ void loadImages() {
 	loadimage(point + 19, L"9_2.jpg");
 }
 
-
-//把鸟放上去
+//This part is written by Chang Yu
+//Put the bird on the 
 void putBird() {
-	//处理掩码图
+	//Put the mask image first
 	putimage(flappyBird.x, flappyBird.y, bird + 0, SRCAND);
 	putimage(flappyBird.x, flappyBird.y, bird + 1, SRCPAINT);
 }
@@ -99,29 +116,31 @@ void putBegin() {
 	putimage(92, 250, startGame + 2, SRCPAINT);
 }
 
-//初始化柱子
-void initPillar(int i)  //i：第几根柱子
+//Initiate the pillar first
+void initPillar(int i)  //i：pillar's index
 {
-	pillar[i].x = 288;  //在窗口外面产生
+	pillar[i].x = 288;  //Initiate out side the window
 	pillar[i].y = 0;
-	pillar[i].height = rand() % 100 + 150; //+160是为了防止柱子随机到0.[0,99]+150-->[150,99+150]
+	pillar[i].height = rand() % 100 + 150; //+150 in case the random noumber goes to 0.[0,99]+150-->[150,99+150]
 }
 
-//画柱子
+
 void putPillar(int i)
 {
-	//上面柱子
+	//up pillar
 	putimage(pillar[i].x, 0, 52, pillar[i].height, down + 0,
 		0, 320 - pillar[i].height, SRCAND);
 	putimage(pillar[i].x, 0, 52, pillar[i].height, down + 1,
 		0, 320 - pillar[i].height, SRCPAINT);
-	//下面柱子
+	//down pillar
 	putimage(pillar[i].x, 512 - (320 - pillar[i].height),
 		52, 320 - pillar[i].height, up + 0, 0, 0, SRCAND);
 	putimage(pillar[i].x, 512 - (320 - pillar[i].height),
 		52, 320 - pillar[i].height, up + 1, 0, 0, SRCPAINT);
 }
 
+
+//set up the points image
 void putPoints(int points) {
 	if (points < 10)
 	{
@@ -129,6 +148,8 @@ void putPoints(int points) {
 		putimage(132, 15, point + (points*2+1), SRCPAINT);
 	}
 
+	//if the points are over 2 digits
+	//get the tens firstly and units digit secondly
 	if (points > 9 && points < 100)
 	{
 		int digit1 = points / 10;
@@ -141,12 +162,12 @@ void putPoints(int points) {
 }
 
 
-//按键反馈
+//Press space to control the bird
 void keyBoard() {
-	char userKey = _getch();//获取按键输入不显示
+	char userKey = _getch();//get the keyboard
 	switch (userKey)
 	{
-		//鸟起来的速度要大于下降的速度
+		//guarantee that the up speed is bigger than down speed
 	case ' ':
 		flappyBird.y -= flappyBird.speed;
 
@@ -156,7 +177,7 @@ void keyBoard() {
 }
 
 
-//撞到地上，gg
+//hit ground or beyond upper bound
 int hitGround() {
 	if (flappyBird.y + 35 > 512 || flappyBird.y + 10 <= 0) {
 		return 1;
@@ -168,51 +189,53 @@ int hitGround() {
 }
 
 
-//碰撞x坐标检测
+//This part is written by Siting Tang
+//To recognize the collision
+//check the x coordinate first
 int xHit()
 {
 	for (int i = 0; i < 3; i++)
 	{
 		if ((flappyBird.x + 36 < pillar[i].x + 52 && flappyBird.x + 36 > pillar[i].x) 
-			|| (flappyBird.x + 5 < pillar[i].x + 52 && flappyBird.x + 5 > pillar[i].x)) //[px,px+52]
+			|| (flappyBird.x + 5 < pillar[i].x + 52 && flappyBird.x + 5 > pillar[i].x))
 		{
-			return i;  //i：返回的是第几根柱子 
+			return i;  //i：return the passing pillar index
 		}
 	}
 	return -1;
 }
 
-
-//碰撞y方向检测
+//This part is written by Siting Tang
+//Then check y coordinate
 int hitPillar()
 {
-	int pos = xHit();  //获取i值
+	int pos = xHit();  //get the x position checking result
 	printf("%d\n", pos);
-	if ((pos != -1 && (flappyBird.y + 15) < pillar[pos].height)  //上面柱子
-		|| (pos != -1 && (flappyBird.y + 28) > (192 + pillar[pos].height)))  //下面柱子
+	if ((pos != -1 && (flappyBird.y + 20) < pillar[pos].height)  //If passing pillar and y is in the range of up 
+		|| (pos != -1 && (flappyBird.y + 30) > (192 + pillar[pos].height)))  //pillar and down pillar
 	{
 		return 1;
 	}
 	return 0;
 }
 
-
-//积分 todo
+//This part is written by Siting Tang
+//get the points
 int getPoints() {
 	int pos = xHit();
 	if (pos != -1 && !hitPillar())
 	{
 		points += 1;
 		
-		//printf("Points: %d\n", points/5);
 	}
-	//除以16是因为鸟通过柱子循环了8次while（true）循环，每循环一次points++
+	//Dividing 8, because there is 8 times loop when bird passing one pillar
+	//Each time points++
 	return points/8;
 }
 
+
 //Game over
 void gameOver() {
-	//从下往上
 	int x = 50;
 	int y = 608;
 	while (y >= 240)
@@ -220,12 +243,11 @@ void gameOver() {
 		putimage(0, 0, &bk);
 		putimage(x, y, over + 0, SRCAND);
 		putimage(x, y, over + 1, SRCPAINT);
-		//使用定时器控制一下，间隔100毫秒移动然后弹出来，2号定时器
 
 		y -= 10;
 		Sleep(100);
 
-		//清除一下上一帧
+		//fresh the last frame
 		FlushBatchDraw();
 	}
 	Sleep(2000);
@@ -234,69 +256,76 @@ void gameOver() {
 
 int main() {
 
-	//随机数
-	srand((unsigned int)time(NULL));
+	//Random time
+	//srand((unsigned int)time(NULL));
+
+	//Load all the images
 	loadImages();
-	//生成窗口大小
+
+	//initiate the window size and background
 	initgraph(288, 608, 1);
 	putimage(0, 0, &bk);
 	putBegin();
 
 	if (_getch() == ' ')
 	{
-		//初始化柱子循环队列
+		//initiate the pillar queue
 		for (int i = 0; i < 3; i++) {
 			initPillar(i);
-			//修改柱子之间的距离，间隔150
+			//set up the distance between each pillar
 			pillar[i].x = 288 + i * 150;
 		}
 
-		//缓解闪屏
+		//Save the image of caching in memory
 		BeginBatchDraw();
 
-		//循环使鸟下坠
+		//Start the game loop
 		while (1)
 		{
 			putimage(0, 0, &bk);
 			putBird();
 
-			//柱子显示
+			//Display the pillar queue
 			for (int i = 0; i < 3; i++)
 			{
 				putPillar(i);
+				//if the pillar is out of the queue
+				//init another one
 				if (pillar[i].x < -202)
 				{
 					initPillar(i);
 				}
 			}
-			//撞地或者撞柱子，gg
+
+			//hit the ground or pillar, game over
 			if (hitGround() || hitPillar())
 			{
 				Sleep(800);
 				break;
 			}
-			//循环移动柱子
 
+			//Move the pillar on y direction
 			for (int i = 0; i < 3; i++)
 			{
 				pillar[i].x -= 10;
 			}
-
-			//更改y轴值来提高难度，也就是下坠快
-			//循环一次下降10个像素点
+			
+			//change the y to make bird drop down
+			//each loop 10 pixel
 
 			flappyBird.y += 10;
 
-			//按键
-			if (_kbhit())//判断有无按键，没按键持续下落
+			//keyboard control
+			if (_kbhit())
 			{
 				keyBoard();
 			}
 
+			//Display the points
 			putPoints(getPoints());
 
-			
 			Sleep(200);
+			//show all the images on screen and fresh last frame
 			FlushBatchDraw();
 
 		}
